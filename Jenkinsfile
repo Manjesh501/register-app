@@ -7,12 +7,12 @@ pipeline {
     }
 
     environment {
-        APP_NAME = "register-app"
-        RELEASE = "1.0.0"
+        APP_NAME    = "register-app"
+        RELEASE     = "1.0.0"
         DOCKER_USER = "manjesh501"
-        DOCKER_PASS = 'dockerhub'
-        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
-        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+        DOCKER_PASS = 'dockerhub'  // Credential ID
+        IMAGE_NAME  = "${DOCKER_USER}/${APP_NAME}"
+        IMAGE_TAG   = "${RELEASE}-${BUILD_NUMBER}"
     }
 
     stages {
@@ -25,7 +25,9 @@ pipeline {
 
         stage("Checkout from SCM") {
             steps {
-                git branch: 'main', credentialsId: 'github', url: 'https://github.com/Manjesh501/register-app'
+                git branch: 'main', 
+                    credentialsId: 'github', 
+                    url: 'https://github.com/Manjesh501/register-app'
             }
         }
 
@@ -54,7 +56,8 @@ pipeline {
         stage("Quality Gate") {
             steps {
                 script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'jenkins-sonarqube-token'
+                    waitForQualityGate abortPipeline: false, 
+                                       credentialsId: 'jenkins-sonarqube-token'
                 }
             }
         }
@@ -63,9 +66,9 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_PASS) {
-                        docker_image = docker.build "${IMAGE_NAME}"
+                        def docker_image = docker.build("${IMAGE_NAME}")
                         docker_image.push("${IMAGE_TAG}")
-                        docker_image.push('latest')
+                        docker_image.push("latest")
                     }
                 }
             }
@@ -89,6 +92,20 @@ pipeline {
                 script {
                     sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
                     sh "docker rmi ${IMAGE_NAME}:latest || true"
+                }
+            }
+        }
+
+        stage("Trigger CD Pipeline") {
+            steps {
+                script {
+                    sh """
+                        curl -v -k --user clouduser:${JENKINS_API_TOKEN} \
+                        -X POST -H 'cache-control: no-cache' \
+                        -H 'content-type: application/x-www-form-urlencoded' \
+                        --data 'IMAGE_TAG=${IMAGE_TAG}' \
+                        'http://ec2-18-205-114-45.compute-1.amazonaws.com:8080/job/gitops-register-app-cd/buildWithParameters?token=gitops-token'
+                    """
                 }
             }
         }
