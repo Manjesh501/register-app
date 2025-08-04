@@ -169,7 +169,7 @@ Contains:
 
 ## 🚀 CI/CD Pipeline Overview
 
-![Pipeline Overview](assets/pipelineoverview.png)
+![Pipeline Overview](pipelineoverview.png)
 
 ## 🔧 Jenkins CI Pipeline
 
