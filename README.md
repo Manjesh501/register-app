@@ -55,7 +55,6 @@ graph TD
 * **Trivy** – Vulnerability scanner.
 * **ArgoCD** – GitOps-based CD tool.
 * **Kubernetes (EKS)** – Orchestration and hosting.
-* **Helm** – Kubernetes package manager.
 * **GitHub** – Source code and GitOps repo.
 * **EC2 Instances** – Jenkins server and ArgoCD setup.
 
@@ -115,11 +114,10 @@ Contains:
 * Dockerfile added in app repo:
 
   ```Dockerfile
-  FROM node:alpine
-  WORKDIR /app
-  COPY . .
-  RUN npm install
-  CMD ["npm", "start"]
+  FROM tomcat:latest
+  RUN cp -R  /usr/local/tomcat/webapps.dist/*  /usr/local/tomcat/webapps
+  COPY /webapp/target/*.war /usr/local/tomcat/webapps
+
   ```
 * Jenkins builds image with tag: `register-app:<BUILD_ID>`
 * Image is pushed to Docker Hub
@@ -169,13 +167,22 @@ Contains:
 
 ## Screenshots
 
-*To be added manually by the user.* Suggested:
+## 🚀 CI/CD Pipeline Overview
 
-* Jenkins build view
-* Trivy scan output
-* DockerHub image
-* ArgoCD UI with synced status
-* Deployed app running in browser
+![Pipeline Overview](assets/pipelineoverview.png)
+
+## 🔧 Jenkins CI Pipeline
+
+![CI Jenkins Pipeline](cijenkins.png)
+
+## 🚀 Jenkins CD Pipeline
+
+![CD Jenkins Pipeline](cdjenkins.png)
+
+## 🎯 ArgoCD Deployment
+
+![ArgoCD UI](argocd.png)
+
 
 ---
 
@@ -187,11 +194,6 @@ This project demonstrates a complete CI/CD setup using modern DevOps tools and p
 * Use of GitOps for secure and declarative deployments
 * Automated vulnerability scanning and rollback capabilities
 
-It serves as a strong foundation for enterprise-ready DevOps pipelines. You can extend this by adding:
-
-* SonarQube for code quality
-* Slack notifications from Jenkins
-* Prometheus + Grafana for monitoring
 
 ---
 
